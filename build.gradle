@@ -1,0 +1,73 @@
+plugins {
+    id 'maven-publish'
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+apply plugin: 'project-report'
+
+apply from: './versions.gradle'
+
+group = 'amp.service.common'
+archivesBaseName = 'amp-youtube-api'
+description = """amp-youtube-api"""
+version = '0.0.1-SNAPSHOT'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+configurations.all {
+	exclude group: "log4j", module:"log4j"
+	exclude group: "org.slf4j", module:"slf4j-simple"
+	exclude group: 'commons-logging', module: 'commons-logging'
+}
+
+dependencies {
+	compile group: 'org.slf4j' , name: 'slf4j-api', version: "$sl4j_version"
+	//Logging log4j2 implementation for logging API above
+	compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: "$log4j2_version"
+	//Logging log4j2 Commons Logging Bridge
+	compile group: 'org.apache.logging.log4j', name: 'log4j-jcl', version: "$log4j2_version"
+	
+    compile group: 'com.google.apis', name: 'google-api-services-youtube', version:'v3-rev182-1.22.0'
+    compile group: 'com.google.apis', name: 'google-api-services-youtubeAnalytics', version:'v1-rev63-1.22.0'
+    compile group: 'com.google.apis', name: 'google-api-services-youtubereporting', version:'v1-rev10-1.22.0'
+    compile group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version:'1.9.4'
+    compile group: 'com.google.http-client', name: 'google-http-client-jackson2', version:'1.20.0'
+    compile group: 'com.google.oauth-client', name: 'google-oauth-client-jetty', version:'1.20.0'
+    compile group: 'com.google.collections', name: 'google-collections', version:'1.0'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.0'
+    compile group: 'commons-io', name: 'commons-io', version:'2.4'
+    
+    compile group: 'junit', name: 'junit', version:'4.12'
+}
+
+//packaging tests
+task packageTests(type: Jar) {
+  from sourceSets.test.output
+  classifier = 'tests'
+}
+
+artifacts.archives packageTests
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
+defaultTasks 'clean','build', 'generatePomFileForMavenJavaPublication', 'publishToMavenLocal', 'publish'
